@@ -3,20 +3,20 @@ export default {
         currentIndex: 0,
 
         // Durumlar
-        isBaseMode: true,      // İlk açılış (Yeşil Kum Saati)
-        isTransformed: false,  // Dönüşmüş (Active)
-        isRecharging: false,   // Şarj oluyor (Kırmızı)
-        isAnimating: false,    // Geçiş animasyonu sırasında
+        isBaseMode: true,      // Başlangıç modu (Kilitli)
+        isTransformed: false,
+        isRecharging: false,
+        isAnimating: false,
 
         imageScale: 1.0,
 
         // Görseller
-        bgImageSrc: "/common/images/omnitrix_base.png", // Başlangıç resmi
+        bgImageSrc: "/common/images/omnitrix_base.png", // Başlangıç: Kum Saati
 
         currentImageSrc: "",
         nextImageSrc: "",
 
-        currentOpacity: 0,
+        currentOpacity: 0, // Başlangıçta uzaylı yok
         nextOpacity: 0,
 
         alienList: [
@@ -31,18 +31,28 @@ export default {
     },
 
     onInit() {
-        // Başlangıç: Uzaylı var ama görünmez, mod Baz.
-        this.currentImageSrc = this.alienList[this.currentIndex];
-        this.currentOpacity = 0;
-        this.bgImageSrc = "/common/images/omnitrix_base.png";
-        this.isBaseMode = true;
+        // İlk açılış ayarları
+        this.resetToInitialState();
+    },
+
+    // Kodu temiz tutmak için sıfırlama işlemini ayrı fonksiyona aldım
+    resetToInitialState() {
+        this.currentIndex = 0; // İstersen Ateş Topu'na sıfırla
+        this.currentImageSrc = this.alienList[0];
+
+        this.currentOpacity = 0; // Görünmez yap
+        this.bgImageSrc = "/common/images/omnitrix_base.png"; // Kilitli moda dön
+        this.isBaseMode = true; // Kilidi kapat
+
+        this.isTransformed = false;
+        this.isRecharging = false;
+        this.isAnimating = false;
     },
 
     handleSwipe(e) {
-        // Dönüşmüşken, şarj olurken veya animasyon varken uzaylı değiştiremezsin
         if (this.isTransformed || this.isRecharging || this.isAnimating) return;
 
-        // --- İLK AÇILIŞ (Baz Modundan Çıkış) ---
+        // --- İLK AÇILIŞ (Kilit Açma Animasyonu) ---
         if (this.isBaseMode) {
             this.runBaseToAlienAnimation();
             return;
@@ -61,10 +71,10 @@ export default {
         this.runAlienToAlienAnimation(nextIndex);
     },
 
-    // --- ANİMASYON FONKSİYONLARI (Aynı kaldı) ---
+    // --- ANİMASYONLAR ---
     runBaseToAlienAnimation() {
         this.isAnimating = true;
-        this.bgImageSrc = "/common/images/omnitrixsecond_base.png"; // Yeşil Baklava
+        this.bgImageSrc = "/common/images/omnitrixsecond_base.png"; // Kilit açıldı (Baklava)
 
         this.nextImageSrc = this.alienList[this.currentIndex];
         this.currentOpacity = 0;
@@ -82,7 +92,7 @@ export default {
     },
 
     finalizeBaseTransition() {
-        this.isBaseMode = false;
+        this.isBaseMode = false; // Artık açık moddayız
         this.currentImageSrc = this.nextImageSrc;
         this.currentOpacity = 1;
         this.nextOpacity = 0;
@@ -115,22 +125,18 @@ export default {
         this.isAnimating = false;
     },
 
-    // --- YENİ DÖNÜŞÜM VE ŞARJ MANTIĞI ---
+    // --- DÖNÜŞÜM VE ŞARJ (RESET) MANTIĞI ---
 
-    // Tıklama Olayı (Toggle Mantığı)
     transform() {
-        // Baz modundaysan, şarjdaysan veya animasyon varsa tıklama çalışmaz
         if (this.isBaseMode || this.isRecharging || this.isAnimating) return;
 
         if (!this.isTransformed) {
-            // DURUM 1: Henüz dönüşmedik -> DÖNÜŞ (ACTIVE OL)
-            // Zamanlayıcı yok! İkinci tıklamaya kadar böyle kalır.
+            // TIKLA -> DÖNÜŞ (YEŞİL EKRAN)
             this.isTransformed = true;
             this.imageScale = 1.3;
-            console.info("Dönüşüm Aktif (Beklemede...)");
         }
         else {
-            // DURUM 2: Zaten dönüşmüşüz -> DÖNÜŞÜMÜ BİTİR VE ŞARJA GEÇ
+            // TEKRAR TIKLA -> DÖNÜŞÜMÜ BİTİR VE ŞARJ ET
             this.isTransformed = false;
             this.imageScale = 1.0;
             this.startRecharge();
@@ -139,27 +145,20 @@ export default {
 
     startRecharge() {
         this.isRecharging = true;
-        console.info("Şarj Modu Başladı (Kırmızı)");
 
         // 1. Arka planı KIRMIZI yap
-        // Dosya adının tam doğru olduğundan emin ol
         this.bgImageSrc = "/common/images/omnitrix_redbase.png";
 
-        // 2. Şarj sırasında uzaylıyı gizleyelim (İsteğe bağlı, daha temiz durur)
+        // 2. Uzaylıyı gizle (Zaten resetlenecek)
         this.currentOpacity = 0;
 
-        // 3. 10 Saniye Bekle
+        // 3. 10 Saniye Bekle ve RESET AT
         setTimeout(() => {
-            // Şarj Bitti
-            this.isRecharging = false;
+            // EN ÖNEMLİ KISIM BURASI:
+            // Her şeyi en başa döndürüyoruz.
+            this.resetToInitialState();
 
-            // Arka planı tekrar YEŞİL BAKLAVA yap
-            this.bgImageSrc = "/common/images/omnitrixsecond_base.png";
-
-            // Uzaylıyı geri getir
-            this.currentOpacity = 1;
-
-            console.info("Omnitrix Hazır!");
-        }, 10000); // 10000ms = 10 saniye
+            console.info("Omnitrix Sıfırlandı ve Kilitlendi!");
+        }, 10000);
     }
 }
