@@ -1,21 +1,20 @@
 export default {
     data: {
-        // Durum Değişkenleri
         currentIndex: 0,
         isTransformed: false,
         isRecharging: false,
         isAnimating: false,
-
-        // YENİ: Başlangıçta Omnitrix 'Baz' modunda (Uzaylı yok)
-        isBaseMode: true,
-
+        isBaseMode: true, // Başlangıçta Base Modu aktif
         imageScale: 1.0,
 
-        // Görseller
-        currentImageSrc: "", // Başlangıçta boş
+        // YENİ: Başlangıçta Kum Saati Arka Planı Var
+        bgImageSrc: "/common/images/omnitrix_base.png",
+
+        // Uzaylı Görselleri
+        currentImageSrc: "",
         nextImageSrc: "",
 
-        // YENİ: Başlangıçta mevcut uzaylı görünmez (0)
+        // Opaklıklar (Başlangıçta uzaylı görünmez = 0)
         currentOpacity: 0,
         nextOpacity: 0,
 
@@ -26,29 +25,30 @@ export default {
             "/common/images/diamondhead.png"
         ],
 
-        // Animasyon zamanlayıcıları
         animationStep: 0,
         animationInterval: null
     },
 
     onInit() {
-        // Uygulama açıldığında ilk uzaylıyı belleğe al ama GÖSTERME (Opacity 0)
+        // Başlangıç ayarları: İlk uzaylıyı sıraya al ama gösterme (Opacity 0)
         this.currentImageSrc = this.alienList[this.currentIndex];
-        this.currentOpacity = 0; // Kilit nokta burası: Görünmez başlıyor
+        this.currentOpacity = 0;
+
+        // Başlangıç arka planı (Emin olmak için tekrar set ediyoruz)
+        this.bgImageSrc = "/common/images/omnitrix_base.png";
         this.isBaseMode = true;
     },
 
     handleSwipe(e) {
         if (this.isTransformed || this.isRecharging || this.isAnimating) return;
 
-        // EĞER BAZ MODUNDAYSA (İLK AÇILIŞ)
+        // --- İLK AÇILIŞ SENARYOSU ---
         if (this.isBaseMode) {
-            // Sağa da çeksen sola da çeksen ilk uzaylıyla açılsın
             this.runBaseToAlienAnimation();
             return;
         }
 
-        // NORMAL MOD (UZAYLILAR ARASI GEÇİŞ)
+        // --- NORMAL GEÇİŞ SENARYOSU ---
         let nextIndex = this.currentIndex;
         if (e.direction === 'left' || e.direction === 2) {
             nextIndex = (this.currentIndex + 1) % this.alienList.length;
@@ -61,19 +61,23 @@ export default {
         this.runAlienToAlienAnimation(nextIndex);
     },
 
-    // YENİ: Hiçlikten Uzaylıya Geçiş Animasyonu
+    // BAZ MODUNDAN UZAYLIYA GEÇİŞ (Sadece 1 kere çalışır)
     runBaseToAlienAnimation() {
         this.isAnimating = true;
-        this.nextImageSrc = this.alienList[this.currentIndex]; // İlk uzaylıyı hazırla
 
-        this.currentOpacity = 0; // Mevcut (Boş) zaten görünmez
+        // 1. ÖNCE ARKA PLANI DEĞİŞTİR (Kum Saati -> Baklava)
+        this.bgImageSrc = "/common/images/omnitrixsecond_base.png";
+
+        // 2. Uzaylıyı yavaşça belirginleştir (Fade In)
+        this.nextImageSrc = this.alienList[this.currentIndex];
+        this.currentOpacity = 0;
         this.nextOpacity = 0;
         this.animationStep = 0;
 
         this.animationInterval = setInterval(() => {
             this.animationStep++;
 
-            // Sadece gelen uzaylıyı parlat (Fade In)
+            // Opaklığı artır (0.0 -> 1.0)
             this.nextOpacity = (this.animationStep / 10);
 
             if (this.animationStep >= 10) {
@@ -84,10 +88,9 @@ export default {
     },
 
     finalizeBaseTransition() {
-        // Artık Baz modundan çıktık, uzaylı modundayız
-        this.isBaseMode = false;
+        this.isBaseMode = false; // Artık normal moda geçtik
 
-        // Gelen uzaylıyı ana uzaylı yap
+        // Gelen uzaylıyı ana görsel yap
         this.currentImageSrc = this.nextImageSrc;
         this.currentOpacity = 1;
         this.nextOpacity = 0;
@@ -95,7 +98,7 @@ export default {
         this.isAnimating = false;
     },
 
-    // Mevcut: Uzaylıdan Uzaylıya Geçiş (Cross-Fade)
+    // UZAYLIDAN UZAYLIYA GEÇİŞ (Cross-Fade)
     runAlienToAlienAnimation(nextIndex) {
         this.isAnimating = true;
         this.nextImageSrc = this.alienList[nextIndex];
@@ -107,7 +110,6 @@ export default {
         this.animationInterval = setInterval(() => {
             this.animationStep++;
 
-            // Biri sönerken diğeri yanar
             this.nextOpacity = (this.animationStep / 10);
             this.currentOpacity = 1 - (this.animationStep / 10);
 
@@ -129,7 +131,7 @@ export default {
     },
 
     transform() {
-        // Baz modundaysan (uzaylı yoksa) dönüşemezsin!
+        // Base modunda dönüşüm yok!
         if (this.isBaseMode || this.isTransformed || this.isRecharging || this.isAnimating) return;
 
         this.isTransformed = true;

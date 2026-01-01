@@ -1,6 +1,6 @@
 <div class="container" onclick="transform" onswipe="handleSwipe">
     <stack class="stack-container">
-        <image src="/common/images/omnitrix_base.png" class="base-bg"></image>
+        <image src="{{bgImageSrc}}" class="base-bg"></image>
 
         <image src="{{currentImageSrc}}"
                class="alien-icon"
