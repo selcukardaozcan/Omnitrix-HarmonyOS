@@ -44,3 +44,20 @@
   font-size: 35px;
   font-weight: bold;
 }
+
+/* index.css en altına ekle */
+.recharge-layer {
+  position: absolute;
+  width: 454px;
+  height: 454px;
+  background-color: #ff0000; /* KIPKIRMIZI */
+  opacity: 0.6;
+  justify-content: center;
+  align-items: center;
+}
+
+.recharge-text {
+  color: white;
+  font-size: 30px;
+  font-weight: bold;
+}

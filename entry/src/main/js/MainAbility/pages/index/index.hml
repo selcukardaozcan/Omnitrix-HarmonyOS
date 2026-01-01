@@ -1,14 +1,14 @@
-<div class="container" focusable="true" onrotation="handleRotation" onkeyevents="handleKey">
+<div class="container" onclick="transform" onswipe="handleSwipe">
     <stack class="stack-container">
         <image src="/common/images/omnitrix_base.png" class="base-bg"></image>
-
-        <image src="{{alienList[currentIndex]}}"
-               class="alien-icon"
-               style="transform: scale({{imageScale}});">
-        </image>
+        <image src="{{alienList[currentIndex]}}" class="alien-icon" style="transform: scale({{imageScale}});"></image>
 
         <div if="{{isTransformed}}" class="flash-layer">
             <text class="transform-text">ACTIVE</text>
+        </div>
+
+        <div if="{{isRecharging}}" class="recharge-layer">
+            <text class="recharge-text">ŞARJ OLUYOR...</text>
         </div>
     </stack>
 </div>
