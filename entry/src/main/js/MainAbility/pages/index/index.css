@@ -1,7 +1,10 @@
+/* --- ANA KONTEYNERLER --- */
 .container {
   width: 454px;
   height: 454px;
   background-color: black;
+  justify-content: center;
+  align-items: center;
 }
 
 .stack-container {
@@ -9,7 +12,8 @@
   height: 454px;
 }
 
-/* 400px genişlikteki taban için: (454 - 400) / 2 = 27px */
+/* --- OMNITRIX ARKA PLANI --- */
+/* 400px genişlik, tam ortalamak için (454-400)/2 = 27px */
 .base-bg {
   position: absolute;
   width: 400px;
@@ -18,21 +22,22 @@
   top: 27px;
 }
 
-/* 260px genişlikteki uzaylı için: (454 - 260) / 2 = 97px */
+/* Sadece .alien-icon kısmını güncellemen yeterli, kalanı aynı */
 .alien-icon {
   position: absolute;
   width: 260px;
   height: 260px;
   left: 97px;
   top: 97px;
-/* Görseli kutunun içine sığdırır, taşan kısımları küçültür */
   object-fit: contain;
+/* Transition satırlarını kaldırdık, JS halledecek */
 }
+/* --- DÖNÜŞÜM EFEKTİ (YEŞİL) --- */
 .flash-layer {
   position: absolute;
   width: 454px;
   height: 454px;
-  background-color: #00ff00;
+  background-color: #00ff00; /* Omnitrix Yeşili */
   justify-content: center;
   align-items: center;
   left: 0px;
@@ -45,15 +50,17 @@
   font-weight: bold;
 }
 
-/* index.css en altına ekle */
+/* --- SOĞUMA EFEKTİ (KIRMIZI) --- */
 .recharge-layer {
   position: absolute;
   width: 454px;
   height: 454px;
-  background-color: #ff0000; /* KIPKIRMIZI */
+  background-color: #ff0000; /* Kırmızı */
   opacity: 0.6;
   justify-content: center;
   align-items: center;
+  left: 0px;
+  top: 0px;
 }
 
 .recharge-text {
