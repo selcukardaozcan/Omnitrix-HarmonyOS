@@ -1,20 +1,21 @@
 export default {
     data: {
         currentIndex: 0,
-        isTransformed: false,
-        isRecharging: false,
-        isAnimating: false,
-        isBaseMode: true, // Başlangıçta Base Modu aktif
+
+        // Durumlar
+        isBaseMode: true,      // İlk açılış (Yeşil Kum Saati)
+        isTransformed: false,  // Dönüşmüş (Active)
+        isRecharging: false,   // Şarj oluyor (Kırmızı)
+        isAnimating: false,    // Geçiş animasyonu sırasında
+
         imageScale: 1.0,
 
-        // YENİ: Başlangıçta Kum Saati Arka Planı Var
-        bgImageSrc: "/common/images/omnitrix_base.png",
+        // Görseller
+        bgImageSrc: "/common/images/omnitrix_base.png", // Başlangıç resmi
 
-        // Uzaylı Görselleri
         currentImageSrc: "",
         nextImageSrc: "",
 
-        // Opaklıklar (Başlangıçta uzaylı görünmez = 0)
         currentOpacity: 0,
         nextOpacity: 0,
 
@@ -30,25 +31,24 @@ export default {
     },
 
     onInit() {
-        // Başlangıç ayarları: İlk uzaylıyı sıraya al ama gösterme (Opacity 0)
+        // Başlangıç: Uzaylı var ama görünmez, mod Baz.
         this.currentImageSrc = this.alienList[this.currentIndex];
         this.currentOpacity = 0;
-
-        // Başlangıç arka planı (Emin olmak için tekrar set ediyoruz)
         this.bgImageSrc = "/common/images/omnitrix_base.png";
         this.isBaseMode = true;
     },
 
     handleSwipe(e) {
+        // Dönüşmüşken, şarj olurken veya animasyon varken uzaylı değiştiremezsin
         if (this.isTransformed || this.isRecharging || this.isAnimating) return;
 
-        // --- İLK AÇILIŞ SENARYOSU ---
+        // --- İLK AÇILIŞ (Baz Modundan Çıkış) ---
         if (this.isBaseMode) {
             this.runBaseToAlienAnimation();
             return;
         }
 
-        // --- NORMAL GEÇİŞ SENARYOSU ---
+        // --- NORMAL UZAYLI GEÇİŞİ ---
         let nextIndex = this.currentIndex;
         if (e.direction === 'left' || e.direction === 2) {
             nextIndex = (this.currentIndex + 1) % this.alienList.length;
@@ -61,14 +61,11 @@ export default {
         this.runAlienToAlienAnimation(nextIndex);
     },
 
-    // BAZ MODUNDAN UZAYLIYA GEÇİŞ (Sadece 1 kere çalışır)
+    // --- ANİMASYON FONKSİYONLARI (Aynı kaldı) ---
     runBaseToAlienAnimation() {
         this.isAnimating = true;
+        this.bgImageSrc = "/common/images/omnitrixsecond_base.png"; // Yeşil Baklava
 
-        // 1. ÖNCE ARKA PLANI DEĞİŞTİR (Kum Saati -> Baklava)
-        this.bgImageSrc = "/common/images/omnitrixsecond_base.png";
-
-        // 2. Uzaylıyı yavaşça belirginleştir (Fade In)
         this.nextImageSrc = this.alienList[this.currentIndex];
         this.currentOpacity = 0;
         this.nextOpacity = 0;
@@ -76,10 +73,7 @@ export default {
 
         this.animationInterval = setInterval(() => {
             this.animationStep++;
-
-            // Opaklığı artır (0.0 -> 1.0)
             this.nextOpacity = (this.animationStep / 10);
-
             if (this.animationStep >= 10) {
                 clearInterval(this.animationInterval);
                 this.finalizeBaseTransition();
@@ -88,31 +82,24 @@ export default {
     },
 
     finalizeBaseTransition() {
-        this.isBaseMode = false; // Artık normal moda geçtik
-
-        // Gelen uzaylıyı ana görsel yap
+        this.isBaseMode = false;
         this.currentImageSrc = this.nextImageSrc;
         this.currentOpacity = 1;
         this.nextOpacity = 0;
-
         this.isAnimating = false;
     },
 
-    // UZAYLIDAN UZAYLIYA GEÇİŞ (Cross-Fade)
     runAlienToAlienAnimation(nextIndex) {
         this.isAnimating = true;
         this.nextImageSrc = this.alienList[nextIndex];
-
         this.currentOpacity = 1;
         this.nextOpacity = 0;
         this.animationStep = 0;
 
         this.animationInterval = setInterval(() => {
             this.animationStep++;
-
             this.nextOpacity = (this.animationStep / 10);
             this.currentOpacity = 1 - (this.animationStep / 10);
-
             if (this.animationStep >= 10) {
                 clearInterval(this.animationInterval);
                 this.finalizeAlienTransition(nextIndex);
@@ -123,31 +110,56 @@ export default {
     finalizeAlienTransition(nextIndex) {
         this.currentIndex = nextIndex;
         this.currentImageSrc = this.alienList[nextIndex];
-
         this.currentOpacity = 1;
         this.nextOpacity = 0;
-
         this.isAnimating = false;
     },
 
+    // --- YENİ DÖNÜŞÜM VE ŞARJ MANTIĞI ---
+
+    // Tıklama Olayı (Toggle Mantığı)
     transform() {
-        // Base modunda dönüşüm yok!
-        if (this.isBaseMode || this.isTransformed || this.isRecharging || this.isAnimating) return;
+        // Baz modundaysan, şarjdaysan veya animasyon varsa tıklama çalışmaz
+        if (this.isBaseMode || this.isRecharging || this.isAnimating) return;
 
-        this.isTransformed = true;
-        this.imageScale = 1.3;
-
-        setTimeout(() => {
+        if (!this.isTransformed) {
+            // DURUM 1: Henüz dönüşmedik -> DÖNÜŞ (ACTIVE OL)
+            // Zamanlayıcı yok! İkinci tıklamaya kadar böyle kalır.
+            this.isTransformed = true;
+            this.imageScale = 1.3;
+            console.info("Dönüşüm Aktif (Beklemede...)");
+        }
+        else {
+            // DURUM 2: Zaten dönüşmüşüz -> DÖNÜŞÜMÜ BİTİR VE ŞARJA GEÇ
             this.isTransformed = false;
             this.imageScale = 1.0;
             this.startRecharge();
-        }, 3000);
+        }
     },
 
     startRecharge() {
         this.isRecharging = true;
+        console.info("Şarj Modu Başladı (Kırmızı)");
+
+        // 1. Arka planı KIRMIZI yap
+        // Dosya adının tam doğru olduğundan emin ol
+        this.bgImageSrc = "/common/images/omnitrix_redbase.png";
+
+        // 2. Şarj sırasında uzaylıyı gizleyelim (İsteğe bağlı, daha temiz durur)
+        this.currentOpacity = 0;
+
+        // 3. 10 Saniye Bekle
         setTimeout(() => {
+            // Şarj Bitti
             this.isRecharging = false;
-        }, 5000);
+
+            // Arka planı tekrar YEŞİL BAKLAVA yap
+            this.bgImageSrc = "/common/images/omnitrixsecond_base.png";
+
+            // Uzaylıyı geri getir
+            this.currentOpacity = 1;
+
+            console.info("Omnitrix Hazır!");
+        }, 10000); // 10000ms = 10 saniye
     }
 }
