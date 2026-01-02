@@ -169,6 +169,6 @@ export default {
         setTimeout(() => {
             this.resetToInitialState();
             console.info("Sistem Resetlendi.");
-        }, 10000);
+        }, 5000);
     }
 }
