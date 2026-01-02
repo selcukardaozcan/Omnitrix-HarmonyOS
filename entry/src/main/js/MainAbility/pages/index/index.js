@@ -2,21 +2,22 @@ export default {
     data: {
         currentIndex: 0,
 
-        // Durumlar
-        isBaseMode: true,      // Başlangıç modu (Kilitli)
-        isTransformed: false,
+        // Modlar
+        isBaseMode: true,
+        isTransformed: false, // Beyaz modda true olur
         isRecharging: false,
         isAnimating: false,
+        isFlashing: false,    // YENİ: Yeşil Flash efekti için
 
         imageScale: 1.0,
 
         // Görseller
-        bgImageSrc: "/common/images/omnitrix_base.png", // Başlangıç: Kum Saati
+        bgImageSrc: "/common/images/omnitrix_base.png",
 
         currentImageSrc: "",
         nextImageSrc: "",
 
-        currentOpacity: 0, // Başlangıçta uzaylı yok
+        currentOpacity: 0,
         nextOpacity: 0,
 
         alienList: [
@@ -31,34 +32,32 @@ export default {
     },
 
     onInit() {
-        // İlk açılış ayarları
         this.resetToInitialState();
     },
 
-    // Kodu temiz tutmak için sıfırlama işlemini ayrı fonksiyona aldım
     resetToInitialState() {
-        this.currentIndex = 0; // İstersen Ateş Topu'na sıfırla
+        this.currentIndex = 0;
         this.currentImageSrc = this.alienList[0];
+        this.currentOpacity = 0;
+        this.bgImageSrc = "/common/images/omnitrix_base.png";
 
-        this.currentOpacity = 0; // Görünmez yap
-        this.bgImageSrc = "/common/images/omnitrix_base.png"; // Kilitli moda dön
-        this.isBaseMode = true; // Kilidi kapat
-
+        this.isBaseMode = true;
         this.isTransformed = false;
         this.isRecharging = false;
         this.isAnimating = false;
+        this.isFlashing = false;
+        this.imageScale = 1.0;
     },
 
     handleSwipe(e) {
-        if (this.isTransformed || this.isRecharging || this.isAnimating) return;
+        // Dönüşüm, şarj veya flash anında kaydırma yapılamaz
+        if (this.isTransformed || this.isRecharging || this.isAnimating || this.isFlashing) return;
 
-        // --- İLK AÇILIŞ (Kilit Açma Animasyonu) ---
         if (this.isBaseMode) {
             this.runBaseToAlienAnimation();
             return;
         }
 
-        // --- NORMAL UZAYLI GEÇİŞİ ---
         let nextIndex = this.currentIndex;
         if (e.direction === 'left' || e.direction === 2) {
             nextIndex = (this.currentIndex + 1) % this.alienList.length;
@@ -71,11 +70,10 @@ export default {
         this.runAlienToAlienAnimation(nextIndex);
     },
 
-    // --- ANİMASYONLAR ---
+    // --- ANİMASYON MANTIKLARI (Aynı kaldı) ---
     runBaseToAlienAnimation() {
         this.isAnimating = true;
-        this.bgImageSrc = "/common/images/omnitrixsecond_base.png"; // Kilit açıldı (Baklava)
-
+        this.bgImageSrc = "/common/images/omnitrixsecond_base.png";
         this.nextImageSrc = this.alienList[this.currentIndex];
         this.currentOpacity = 0;
         this.nextOpacity = 0;
@@ -92,7 +90,7 @@ export default {
     },
 
     finalizeBaseTransition() {
-        this.isBaseMode = false; // Artık açık moddayız
+        this.isBaseMode = false;
         this.currentImageSrc = this.nextImageSrc;
         this.currentOpacity = 1;
         this.nextOpacity = 0;
@@ -125,40 +123,52 @@ export default {
         this.isAnimating = false;
     },
 
-    // --- DÖNÜŞÜM VE ŞARJ (RESET) MANTIĞI ---
-
+    // --- YENİ DÖNÜŞÜM SENARYOSU ---
     transform() {
-        if (this.isBaseMode || this.isRecharging || this.isAnimating) return;
+        if (this.isBaseMode || this.isRecharging || this.isAnimating || this.isFlashing) return;
 
+        // DURUM 1: Henüz dönüşmedik -> Önce Yeşil Flash, Sonra Beyaz
         if (!this.isTransformed) {
-            // TIKLA -> DÖNÜŞ (YEŞİL EKRAN)
-            this.isTransformed = true;
-            this.imageScale = 1.3;
+            console.info("Dönüşüm Başladı: Yeşil Ekran");
+
+            // 1. Ekranı komple yeşil yap (Flash)
+            this.isFlashing = true;
+
+            // 2. Uzaylıyı gizle (Arka planda kalsın)
+            this.currentOpacity = 0;
+
+            // 3. 2 Saniye bekle, sonra Beyaza dön
+            setTimeout(() => {
+                this.isFlashing = false; // Yeşil ekranı kaldır
+
+                // Arka planı BEYAZ BAZ yap
+                this.bgImageSrc = "/common/images/omnitrix_whitebase.png";
+
+                // Artık dönüşmüş durumdayız (White Mode)
+                this.isTransformed = true;
+                console.info("Mod: Beyaz Omnitrix (Beklemede)");
+            }, 2000);
         }
+        // DURUM 2: Zaten Beyaz Moddayız -> Tıklayınca Şarj Et
         else {
-            // TEKRAR TIKLA -> DÖNÜŞÜMÜ BİTİR VE ŞARJ ET
-            this.isTransformed = false;
-            this.imageScale = 1.0;
             this.startRecharge();
         }
     },
 
     startRecharge() {
         this.isRecharging = true;
+        console.info("Şarj Modu Aktif");
 
         // 1. Arka planı KIRMIZI yap
         this.bgImageSrc = "/common/images/omnitrix_redbase.png";
 
-        // 2. Uzaylıyı gizle (Zaten resetlenecek)
-        this.currentOpacity = 0;
+        // 2. Kırmızı Opaklık Katmanı (HML'de isRecharging true olunca devreye girer)
+        // CSS'de opacity 0.2 yaptık.
 
-        // 3. 10 Saniye Bekle ve RESET AT
+        // 3. 10 Saniye sonra Reset
         setTimeout(() => {
-            // EN ÖNEMLİ KISIM BURASI:
-            // Her şeyi en başa döndürüyoruz.
             this.resetToInitialState();
-
-            console.info("Omnitrix Sıfırlandı ve Kilitlendi!");
+            console.info("Sistem Resetlendi.");
         }, 10000);
     }
 }
