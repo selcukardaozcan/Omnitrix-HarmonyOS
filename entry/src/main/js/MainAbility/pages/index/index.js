@@ -22,9 +22,16 @@ export default {
 
         alienList: [
             "/common/images/heatblast.png",
-            "/common/images/greymater.png",
+            "/common/images/greymatter.png",
+            "/common/images/wildmutt.png",
+            "/common/images/ghostfreak.png",
+            "/common/images/upgrade.png",
+            "/common/images/fourarms.png",
+            "/common/images/stinkfly.png",
+            "/common/images/ripjaws.png",
             "/common/images/xlr8.png",
             "/common/images/diamondhead.png"
+
         ],
 
         animationStep: 0,
