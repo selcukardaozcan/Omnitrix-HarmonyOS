@@ -5,7 +5,7 @@
         <image src="{{currentImageSrc}}" class="alien-icon" style="transform: scale({{imageScale}}); opacity: {{currentOpacity}};"></image>
         <image src="{{nextImageSrc}}" class="alien-icon" style="transform: scale({{imageScale}}); opacity: {{nextOpacity}};"></image>
 
-        <div if="{{isFlashing}}" class="flash-layer"></div>
+        <div if="{{isFlashing}}" class="flash-layer" style="opacity: {{flashOpacity}};"></div>
 
         <div if="{{isRecharging}}" class="recharge-layer"></div>
     </stack>

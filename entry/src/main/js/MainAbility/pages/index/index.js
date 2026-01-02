@@ -1,8 +1,7 @@
 export default {
     data: {
         currentIndex: 0,
-
-        // Modlar
+        // Durumlar
         isBaseMode: true,
         isTransformed: false,
         isRecharging: false,
@@ -11,7 +10,6 @@ export default {
 
         imageScale: 1.0,
 
-        // Görseller
         bgImageSrc: "/common/images/omnitrix_base.png",
 
         currentImageSrc: "",
@@ -19,6 +17,9 @@ export default {
 
         currentOpacity: 0,
         nextOpacity: 0,
+
+        // YENİ: Flash efekti için opaklık değişkeni
+        flashOpacity: 0,
 
         alienList: [
             "/common/images/heatblast.png",
@@ -33,9 +34,9 @@ export default {
             "/common/images/diamondhead.png"
         ],
 
-        animationStep: 0,
+        // Animasyon sayaçları
         animationInterval: null,
-        introFrameCount: 1 // Kare sayacı
+        introFrameCount: 1
     },
 
     onInit() {
@@ -53,21 +54,36 @@ export default {
         this.isRecharging = false;
         this.isAnimating = false;
         this.isFlashing = false;
+        this.flashOpacity = 0; // Opaklığı sıfırla
         this.imageScale = 1.0;
         this.introFrameCount = 1;
+    },
+
+    // --- KARE KARE VİDEO OYNATICI ---
+    playIntroAnimation() {
+        this.isAnimating = true;
+        this.introFrameCount = 1;
+
+        this.animationInterval = setInterval(() => {
+            let frameNumber = this.introFrameCount;
+            let paddedNumber = (frameNumber < 10 ? '00' : (frameNumber < 100 ? '0' : '')) + frameNumber;
+            this.bgImageSrc = "/common/images/intro/ezgif-frame-" + paddedNumber + ".png";
+            this.introFrameCount++;
+
+            if (this.introFrameCount > 24) {
+                clearInterval(this.animationInterval);
+                this.finalizeBaseTransition();
+            }
+        }, 33);
     },
 
     handleSwipe(e) {
         if (this.isTransformed || this.isRecharging || this.isAnimating || this.isFlashing) return;
 
-        // --- DÜZELTME BURADA YAPILDI ---
         if (this.isBaseMode) {
-            // Eskiden runBaseToAlienAnimation çağırıyordun,
-            // şimdi video karesi oynatan fonksiyonu çağırıyoruz:
             this.playIntroAnimation();
             return;
         }
-        // -------------------------------
 
         let nextIndex = this.currentIndex;
         if (e.direction === 'left' || e.direction === 2) {
@@ -81,42 +97,11 @@ export default {
         this.runAlienToAlienAnimation(nextIndex);
     },
 
-    // --- KARE KARE VİDEO OYNATICI ---
-    playIntroAnimation() {
-        this.isAnimating = true;
-        this.introFrameCount = 1;
-
-        // 33ms = Saniyede yaklaşık 30 kare
-        this.animationInterval = setInterval(() => {
-
-            // Dosya ismi formatlama (1 -> 001, 10 -> 010)
-            let frameNumber = this.introFrameCount;
-            let paddedNumber = (frameNumber < 10 ? '00' : (frameNumber < 100 ? '0' : '')) + frameNumber;
-
-            // DİKKAT: Dosya yolun /common/images/intro/ezgif-frame-001.png olmalı
-            this.bgImageSrc = "/common/images/intro/ezgif-frame-" + paddedNumber + ".png";
-
-            this.introFrameCount++;
-
-            // 24 Kare olduğu için 24'te bitiriyoruz
-            if (this.introFrameCount > 24) {
-                clearInterval(this.animationInterval);
-                this.finalizeBaseTransition();
-            }
-        }, 33);
-    },
-
     finalizeBaseTransition() {
         this.isBaseMode = false;
-
-        // Animasyon bitince kalıcı arka planı koy
         this.bgImageSrc = "/common/images/omnitrixsecond_base.png";
-
-        // Uzaylıyı göster
-        this.currentImageSrc = this.nextImageSrc || this.alienList[this.currentIndex];
+        this.currentImageSrc = this.alienList[this.currentIndex];
         this.currentOpacity = 1;
-        this.nextOpacity = 0;
-
         this.isAnimating = false;
     },
 
@@ -125,13 +110,13 @@ export default {
         this.nextImageSrc = this.alienList[nextIndex];
         this.currentOpacity = 1;
         this.nextOpacity = 0;
-        this.animationStep = 0;
+        let step = 0;
 
         this.animationInterval = setInterval(() => {
-            this.animationStep++;
-            this.nextOpacity = (this.animationStep / 10);
-            this.currentOpacity = 1 - (this.animationStep / 10);
-            if (this.animationStep >= 10) {
+            step++;
+            this.nextOpacity = (step / 10);
+            this.currentOpacity = 1 - (step / 10);
+            if (step >= 10) {
                 clearInterval(this.animationInterval);
                 this.finalizeAlienTransition(nextIndex);
             }
@@ -146,25 +131,70 @@ export default {
         this.isAnimating = false;
     },
 
-    // --- DÖNÜŞÜM VE ŞARJ ---
+    // --- TRANSFORMATION LOGIC ---
     transform() {
         if (this.isBaseMode || this.isRecharging || this.isAnimating || this.isFlashing) return;
 
+        // DURUM 1: Dönüşüm Başlıyor (Yeşil Efekt)
         if (!this.isTransformed) {
-            console.info("Dönüşüm Başladı: Yeşil Ekran");
-            this.isFlashing = true;
-            this.currentOpacity = 0;
-
-            setTimeout(() => {
-                this.isFlashing = false;
-                this.bgImageSrc = "/common/images/omnitrix_whitebase.png";
-                this.isTransformed = true;
-                console.info("Mod: Beyaz Omnitrix");
-            }, 2000);
+            console.info("Dönüşüm Başlatılıyor...");
+            this.runFlashSequence();
         }
+        // DURUM 2: Zaten Dönüşmüş (Şarj Moduna Geç)
         else {
             this.startRecharge();
         }
+    },
+
+    // --- YENİ SİNEMATİK FLASH ANİMASYONU ---
+    runFlashSequence() {
+        this.isFlashing = true;      // Yeşil katmanı aktif et
+        this.flashOpacity = 0;       // Başlangıçta görünmez
+        this.currentOpacity = 0;     // Uzaylıyı gizle
+
+        let fadeStep = 0;
+
+        // ADIM 1: FADE IN (Hızlıca Parlasın - 300ms)
+        let fadeInInterval = setInterval(() => {
+            fadeStep += 0.1;
+            this.flashOpacity = fadeStep;
+
+            if (this.flashOpacity >= 1) {
+                clearInterval(fadeInInterval);
+                this.flashOpacity = 1; // Tam yeşil
+
+                // ADIM 2: HOLD (3 Saniye Bekle)
+                setTimeout(() => {
+                    this.startFadeOut();
+                }, 3000);
+            }
+        }, 30);
+    },
+
+    startFadeOut() {
+        // Tam bu anda (ekran yeşilken) arkadaki resmi değiştiriyoruz.
+        // Böylece yeşil kalktığında alttan Beyaz Omnitrix çıkacak.
+        this.bgImageSrc = "/common/images/omnitrix_whitebase.png";
+
+        let fadeStep = 1.0;
+
+        // ADIM 3: FADE OUT (Yavaşça Solsun - 1 Saniye)
+        // 1 saniye = 1000ms. 30ms aralıklarla çalışırsa ~33 adım eder.
+        // 1.0 / 33 ≈ 0.03 azaltmalıyız.
+
+        let fadeOutInterval = setInterval(() => {
+            fadeStep -= 0.03;
+            this.flashOpacity = fadeStep;
+
+            if (this.flashOpacity <= 0) {
+                clearInterval(fadeOutInterval);
+                this.flashOpacity = 0;
+                this.isFlashing = false; // Yeşil katmanı kapat
+
+                this.isTransformed = true; // Artık Beyaz Moddayız
+                console.info("Mod: Beyaz Omnitrix");
+            }
+        }, 30);
     },
 
     startRecharge() {
@@ -175,6 +205,6 @@ export default {
         setTimeout(() => {
             this.resetToInitialState();
             console.info("Sistem Resetlendi.");
-        }, 5000); // 5 saniye yaptık
+        }, 5000);
     }
 }
