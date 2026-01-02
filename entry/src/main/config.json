@@ -1,7 +1,7 @@
 {
   "app": {
-    "bundleName": "com.example.deneme",
-    "vendor": "example",
+    "bundleName": "com.selcukardaozcan.omnitrix",
+    "vendor": "selcukardaozcan",
     "version": {
       "code": 1000000,
       "name": "1.0.0"
