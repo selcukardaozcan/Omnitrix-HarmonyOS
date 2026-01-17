@@ -1,13 +1,26 @@
 {
   "app": {
     "signingConfigs": [
+      {
+        "name": "default",
+        "type": "HarmonyOS",
+        "material": {
+          "storeFile": "C:/Users/selcu/Documents/GitHub/Omnitrix-HarmonyOS/omnitrixdemo.p12",
+          "storePassword": "000000183B047972BF3B082BE0C433CE6D9B52DBBA577F0C3FB8E8DCB4EB91D2E611DBAC8917AF98",
+          "keyAlias": "omnitrixdemo",
+          "keyPassword": "000000189A22285196492166E478D392292048B44BA9514EECA6891F9E625EEE926B49B37D075D91",
+          "signAlg": "SHA256withECDSA",
+          "profile": "C:/Users/selcu/Downloads/omnitrixdemoDebug.p7b",
+          "certpath": "C:/Users/selcu/Downloads/omnitrixdemo.cer"
+        }
+      }
     ],
     "products": [
       {
         "name": "default",
         "signingConfig": "default",
         "targetSdkVersion": "5.1.0(18)",
-        "compatibleSdkVersion": "5.1.0(18)",
+        "compatibleSdkVersion": "5.0.0(12)",
         "runtimeOS": "HarmonyOS",
         "buildOption": {
           "strictMode": {
