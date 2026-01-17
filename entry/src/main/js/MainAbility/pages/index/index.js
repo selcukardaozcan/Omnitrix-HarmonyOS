@@ -3,36 +3,25 @@ export default {
         currentIndex: 0,
 
         // DURUMLAR
-        isBaseMode: true,      // İlk açılış (Kapalı Saat)
-        isTransformed: false,  // Dönüşmüş hali (Beyaz Saat)
-        isRecharging: false,   // Şarj modu (Kırmızı Saat)
-        isFlashing: false,     // Yeşil Patlama Efekti
-        isAnimating: false,    // O an animasyon var mı? (Tıklamayı engellemek için)
+        isBaseMode: true,
+        isTransformed: false,
+        isRecharging: false,
+        isTransforming: false,
 
-        // RESİM YOLLARI
         bgImageSrc: "/common/images/omnitrix_base.png",
-
-        // SENİN GÖNDERDİĞİN RESİM İSMİ BURADA:
         overlayImageSrc: "/common/images/omnitrixsecondbase_empty.png",
 
-        flashOpacity: 0,
-
-        // Intro Animasyonu Sayaçları
-        introFrameCount: 0,
-        animationInterval: null,
-
-        // UZAYLI LİSTESİ
         alienList: [
             "/common/images/heatblast.png",
-            "/common/images/greymatter.png",
-            "/common/images/wildmutt.png",
-            "/common/images/ghostfreak.png",
-            "/common/images/upgrade.png",
-            "/common/images/fourarms.png",
             "/common/images/stinkfly.png",
-            "/common/images/ripjaws.png",
+            "/common/images/diamondhead.png",
             "/common/images/xlr8.png",
-            "/common/images/diamondhead.png"
+            "/common/images/ripjaws.png",
+            "/common/images/fourarms.png",
+            "/common/images/greymatter.png",
+            "/common/images/upgrade.png",
+            "/common/images/ghostfreak.png",
+            "/common/images/wildmutt.png"
         ],
     },
 
@@ -40,110 +29,69 @@ export default {
         this.resetToInitialState();
     },
 
-    // Swiper değiştikçe index'i güncelle
-    updateIndex(e) {
-        this.currentIndex = e.index;
+    handleSwipe(e) {
+        // Şarjdaysa kaydırmayı da engelle
+        if (this.isBaseMode || this.isTransformed || this.isRecharging || this.isTransforming) return;
+
+        if (e.direction === 'left') {
+            this.nextAlien();
+        } else if (e.direction === 'right') {
+            this.prevAlien();
+        }
     },
 
-    // --- ANA TIKLAMA FONKSİYONU ---
-    transform() {
-        // Animasyon oynarken tıklamayı engelle
-        if (this.isRecharging || this.isFlashing || this.isAnimating) return;
+    nextAlien() {
+        if (this.currentIndex < this.alienList.length - 1) {
+            this.currentIndex++;
+        } else {
+            this.currentIndex = 0;
+        }
+    },
 
-        // 1. Kapalıysa -> Açılış Videosunu Oynat
+    prevAlien() {
+        if (this.currentIndex > 0) {
+            this.currentIndex--;
+        } else {
+            this.currentIndex = this.alienList.length - 1;
+        }
+    },
+
+    transform() {
+        // 1. Durum: Şarjdaysa (Kırmızı) -> DOKUNMAYI YOK SAY (Etkisiz Hale Getir)
+        if (this.isRecharging) {
+            return; // Hiçbir şey yapma, 5 saniyenin dolmasını bekle
+        }
+
+        // 2. Durum: Kapalıysa -> Uzaylı Seçimi
         if (this.isBaseMode) {
-            this.playIntroAnimation();
+            this.isBaseMode = false;
+            this.bgImageSrc = "/common/images/omnitrixsecond_base.png";
             return;
         }
 
-        // 2. Açıksa -> Dönüşüm Başlasın (Yeşil Efekt)
-        if (!this.isTransformed) {
-            this.runFlashSequence();
+        // 3. Durum: Dönüşüm Efekti (Yeşil Işık - 2 Saniye)
+        if (!this.isTransformed && !this.isTransforming) {
+            this.isTransforming = true;
+
+            setTimeout(() => {
+                this.isTransforming = false;
+                this.isTransformed = true;
+                this.bgImageSrc = "/common/images/omnitrix_whitebase.png";
+            }, 2000);
         }
-        // 3. Zaten dönüşmüşse -> Şarj Moduna Geç
-        else {
+
+        // 4. Durum: Dönüşmüşse -> Şarja Geç
+        else if (this.isTransformed) {
             this.startRecharge();
         }
     },
 
-    // --- AÇILIŞ VİDEOSU ---
-    playIntroAnimation() {
-        this.isAnimating = true;
-        this.introFrameCount = 0;
-
-        this.animationInterval = setInterval(() => {
-            this.introFrameCount++;
-
-            // Dosya adını formatla: 1 -> 001
-            let paddedNumber = this.introFrameCount < 10 ? '00' + this.introFrameCount : '0' + this.introFrameCount;
-            this.bgImageSrc = '/common/images/intro/ezgif-frame-' + paddedNumber + '.png';
-
-            if (this.introFrameCount >= 24) {
-                clearInterval(this.animationInterval);
-                this.finalizeBaseTransition();
-            }
-        }, 33); // 30 FPS
-    },
-
-    finalizeBaseTransition() {
-        this.isBaseMode = false;      // Kapalı mod bitti
-        this.isAnimating = false;     // Kilit kalktı
-
-        // Arka planı değiştir (Bu resim en altta kalacak)
-        // Üstüne overlay (çerçeve) bineceği için uzaylılar arada kalacak
-        this.bgImageSrc = "/common/images/omnitrixsecond_base.png";
-    },
-
-    // --- DÖNÜŞÜM EFEKTİ ---
-    runFlashSequence() {
-        this.isFlashing = true;
-        this.isAnimating = true;
-        this.flashOpacity = 0;
-
-        let step = 0;
-        // Fade In
-        let fadeInTimer = setInterval(() => {
-            step += 0.1;
-            this.flashOpacity = step;
-
-            if (this.flashOpacity >= 1) {
-                this.flashOpacity = 1;
-                clearInterval(fadeInTimer);
-
-                // Tam yeşil olduğunda arkadaki her şeyi değiştir
-                this.bgImageSrc = "/common/images/omnitrix_whitebase.png";
-                this.isTransformed = true; // Uzaylılar ve Çerçeve gizlenecek
-
-                // 3 saniye bekle
-                setTimeout(() => {
-                    this.startFadeOut();
-                }, 3000);
-            }
-        }, 30);
-    },
-
-    startFadeOut() {
-        let step = 1;
-        // Fade Out
-        let fadeOutTimer = setInterval(() => {
-            step -= 0.05;
-            this.flashOpacity = step;
-
-            if (this.flashOpacity <= 0) {
-                this.flashOpacity = 0;
-                clearInterval(fadeOutTimer);
-                this.isFlashing = false;
-                this.isAnimating = false;
-            }
-        }, 30);
-    },
-
-    // --- ŞARJ MODU ---
     startRecharge() {
         this.isRecharging = true;
-        this.isAnimating = true;
         this.bgImageSrc = "/common/images/omnitrix_redbase.png";
 
+        // 5 SANİYE ZORUNLU BEKLEME
+        // Kullanıcı tıklasa bile çıkamaz (transform fonksiyonunda engelledik)
         setTimeout(() => {
             this.resetToInitialState();
         }, 5000);
@@ -155,9 +103,6 @@ export default {
         this.isBaseMode = true;
         this.isTransformed = false;
         this.isRecharging = false;
-        this.isFlashing = false;
-        this.isAnimating = false;
-        this.flashOpacity = 0;
-        this.introFrameCount = 0;
+        this.isTransforming = false;
     }
 }

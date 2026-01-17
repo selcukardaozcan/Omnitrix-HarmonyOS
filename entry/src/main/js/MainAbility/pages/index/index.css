@@ -1,81 +1,79 @@
-/* --- ANA KAPLAYICILAR --- */
 .container {
-  width: 454px;
-  height: 454px;
-  background-color: black;
+  width: 466px;
+  height: 466px;
   justify-content: center;
   align-items: center;
+  background-color: black;
 }
 
 .stack-container {
-  width: 454px;
-  height: 454px;
+  width: 466px;
+  height: 466px;
 }
 
-/* 1. KATMAN (EN ALT): Yeşil Zemin / Arka Plan */
 .base-bg {
-  position: absolute;
-  width: 454px;
-  height: 454px;
+  width: 466px;
+  height: 466px;
   left: 0px;
   top: 0px;
-  z-index: 1; /* En altta duracak */
 }
 
-/* 2. KATMAN (ORTA): Uzaylılar (Swiper) */
-.swiper-box {
-  width: 454px;
-  height: 454px;
-  background-color: transparent; /* Arkadaki zemini görmek için şeffaf */
-  z-index: 2; /* Zeminin üstünde, çerçevenin altında */
-}
-
-/* Her bir uzaylı sayfası */
-.swiper-item {
-  width: 454px;
-  height: 454px;
-  display: flex;
+/* Uzaylı Kutusu */
+.alien-box {
+  width: 466px;
+  height: 466px;
   justify-content: center;
   align-items: center;
 }
 
-/* Uzaylı Resmi */
 .alien-icon {
-  width: 260px;
-  height: 260px;
+  width: 160px;
+  height: 240px;
   object-fit: contain;
 }
 
-/* 3. KATMAN (ÜST): Gri Çerçeve (Maske) */
 .overlay-frame {
-  position: absolute;
-  width: 454px;
-  height: 454px;
-  left: 0px;
-  top: 0px;
-  object-fit: contain;
-  z-index: 10; /* Uzaylıların üstünde durmalı ki maskeleme yapsın */
-  pointer-events: none; /* ÖNEMLİ: Dokunmayı engelleme, parmak arkadaki Swiper'a değsin */
+  width: 466px;
+  height: 466px;
+  pointer-events: none;
 }
 
-/* 4. KATMAN (EN ÜST): Efektler */
-.flash-layer {
+.intro-image {
+  width: 466px;
+  height: 466px;
   position: absolute;
-  width: 454px;
-  height: 454px;
-  background-color: #00ff00; /* Yeşil Patlama */
-  left: 0px;
   top: 0px;
-  z-index: 20; /* Her şeyin üstünde */
+  left: 0px;
+  z-index: 999;
+  background-color: black;
+}
+
+/* GÜNCELLENEN YEŞİL EFEKT */
+.green-flash {
+  width: 466px;
+  height: 466px;
+  background-color: #00ff00; /* Fosforlu Yeşil */
+
+/* DEĞİŞİKLİK BURADA: %100 OPAK */
+  opacity: 1;
+
+/* Ekranı tam kaplaması için pozisyon ayarları */
+  position: absolute;
+  top: 0px;
+  left: 0px;
+  z-index: 100; /* Diğer her şeyin üstünde dursun */
 }
 
 .recharge-layer {
+  width: 466px;
+  height: 466px;
+  background-color: #ff0000;
+  opacity: 0.2; /* Kırmızı şarj ekranı hafif şeffaf kalabilir */
+}
+
+/* En üstte görünmez tıklama katmanı */
+.click-area {
+  width: 466px;
+  height: 466px;
   position: absolute;
-  width: 454px;
-  height: 454px;
-  background-color: #ff0000; /* Kırmızı Şarj */
-  opacity: 0.2;
-  left: 0px;
-  top: 0px;
-  z-index: 20;
 }

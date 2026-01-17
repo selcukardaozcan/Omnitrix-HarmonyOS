@@ -10,8 +10,7 @@
     },
     {
       "name": "MainAbility_label",
-      "value": "label"
-    },
-    { "name": "app_name", "value": "Omnitrix" }
+      "value": "omnitrix"
+    }
   ]
 }

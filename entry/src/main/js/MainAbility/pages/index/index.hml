@@ -1,33 +1,25 @@
-<div class="container">
+<div class="container" onswipe="handleSwipe">
     <stack class="stack-container">
 
         <image src="{{bgImageSrc}}" class="base-bg"></image>
 
-        <swiper class="swiper-box"
-                index="{{currentIndex}}"
-                loop="true"
-                vertical="false"
-                indicator="false"
-                duration="300"
-                onchange="updateIndex"
-                onclick="transform">
+        <div class="alien-box">
+            <image show="{{!isBaseMode && !isTransformed && !isRecharging}}"
+                   src="{{alienList[currentIndex]}}"
+                   class="alien-icon">
+            </image>
+        </div>
 
-            <div class="swiper-item" for="{{(index, item) in alienList}}">
-                <image show="{{!isBaseMode && !isTransformed && !isRecharging && !isFlashing}}"
-                       src="{{item}}"
-                       class="alien-icon">
-                </image>
-            </div>
-
-        </swiper>
-
-        <image show="{{!isBaseMode && !isTransformed && !isRecharging && !isFlashing}}"
+        <image show="{{!isBaseMode && !isTransformed && !isRecharging}}"
                src="{{overlayImageSrc}}"
                class="overlay-frame">
         </image>
 
-        <div if="{{isFlashing}}" class="flash-layer" style="opacity: {{flashOpacity}};"></div>
+        <div if="{{isTransforming}}" class="green-flash"></div>
+
         <div if="{{isRecharging}}" class="recharge-layer"></div>
+
+        <div class="click-area" onclick="transform"></div>
 
     </stack>
 </div>
