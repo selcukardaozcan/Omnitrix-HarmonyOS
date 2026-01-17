@@ -1,19 +1,6 @@
 {
   "app": {
     "signingConfigs": [
-      {
-        "name": "default",
-        "type": "HarmonyOS",
-        "material": {
-          "certpath": "C:/Users/selcu/Downloads/omnitrixdemo.cer",
-          "keyAlias": "omnitrixdemo",
-          "keyPassword": "00000018F3E6EDA15961E46A82C10A3B2E9A2B08A71C55FE321CD44AF1B39AB611DCD3921E194DF7",
-          "profile": "C:/Users/selcu/Downloads/omnitrixdemoDebug.p7b",
-          "signAlg": "SHA256withECDSA",
-          "storeFile": "C:/Users/selcu/DevecostudioProjects/omnitrix/omnitrixdemo.p12",
-          "storePassword": "00000018F9E8F83441571413865CC467073ABA3482EF4A01FE211C3CDBF09593899D6BBD626823AF"
-        }
-      }
     ],
     "products": [
       {
